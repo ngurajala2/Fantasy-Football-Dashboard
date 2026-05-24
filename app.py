@@ -97,7 +97,9 @@ h1,h2,h3,h4,h5,h6,label,p,li      { color: #e6edf3 !important; }
 POS_COLORS = {
     "QB": "#ef4444", "RB": "#22c55e", "WR": "#3b82f6",
     "TE": "#f59e0b", "K": "#8b5cf6", "DEF": "#6b7280",
+    "FLEX": "#14b8a6",
 }
+FLEX_POSITIONS = ["RB", "WR", "TE"]
 
 PRIORITY_PRESETS = {
     "Boom/Bust Heavy": {
@@ -295,7 +297,9 @@ def apply_draft_filter(df: pd.DataFrame, state: dict) -> pd.DataFrame:
 
 def get_best_available(df: pd.DataFrame, state: dict, pos_filter=None, top_n=5) -> pd.DataFrame:
     avail = df[~df["is_drafted"] & ~df["is_mine"]]
-    if pos_filter and pos_filter != "ALL":
+    if pos_filter == "FLEX":
+        avail = avail[avail["position"].isin(FLEX_POSITIONS)]
+    elif pos_filter and pos_filter != "ALL":
         avail = avail[avail["position"] == pos_filter]
     return avail.head(top_n)
 
@@ -475,7 +479,7 @@ def render_draft_board(state: dict):
                                placeholder="e.g. CMC, Tyreek…", key="search_input")
         st.session_state.search_term = search
     with c2:
-        pos_filter = st.selectbox("Position", ["ALL", "QB", "RB", "WR", "TE", "K", "DEF"])
+        pos_filter = st.selectbox("Position", ["ALL", "QB", "RB", "WR", "TE", "FLEX", "K", "DEF"])
     with c3:
         hide_drafted = st.checkbox("Hide drafted", value=True)
     with c4:
@@ -485,7 +489,9 @@ def render_draft_board(state: dict):
     view = df.copy()
     if search:
         view = view[view["player_name"].str.contains(search, case=False, na=False)]
-    if pos_filter != "ALL":
+    if pos_filter == "FLEX":
+        view = view[view["position"].isin(FLEX_POSITIONS)]
+    elif pos_filter != "ALL":
         view = view[view["position"] == pos_filter]
     if hide_drafted:
         view = view[~view["is_drafted"]]
