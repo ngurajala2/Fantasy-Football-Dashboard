@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+.env
+.env.*
+
+data/cache/
+!.gitkeep
+
+.DS_Store
+.streamlit/
